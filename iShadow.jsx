@@ -1,7 +1,7 @@
-﻿// iShadow.jsx for Adobe Photoshop
+// iShadow.jsx for Adobe Photoshop
 // Description: Script create iOS 10 style shadow for one selected layer.
 // Requirements: Adobe Photoshop CS3 and higher
-// Version: 0.1, September 2017
+// Version: 0.2, September 2017
 // Author: Sergey Osokin, graphic designer (hi@sergosokin.ru)
 // Website: http://sergosokin.ru
 // ============================================================================
@@ -23,21 +23,25 @@ if (documents.length) {
 	var doc = app.activeDocument;
 }
 
+duplicate();
+
 // main - show dialog
 function main() {
-	layoutDialog().show();
+	uiDialog().show();
 }
 
-// layoutDialog - get placeholder dimensions, position, and name
-function layoutDialog() {
+// uiDialog - get placeholder dimensions
+function uiDialog() {
 	// declare local variables
 	var y = 0, b = 0, s = 100;
+    var dy = 0, db = 0, ds = 100; //delta value
+    var prev = true; //preview state
+	var savedState = doc.activeHistoryState;
 
 	// dialog properties
-	var dlg = new Window('dialog', 'iShadow v0.1');
+	var dlg = new Window('dialog', 'iShadow v0.2');
 	dlg.orientation = 'column';
 	dlg.alignChildren = 'fill';
-
 
 	// position panel
 	dlg.pos = dlg.add('panel');
@@ -48,7 +52,7 @@ function layoutDialog() {
 		// Dialog info
 		dlg.pos.i = dlg.pos.add('group');
 		dlg.pos.i.orientation = 'row';
-		dlg.pos.i.alignment = 'center';
+		dlg.pos.i.alignment = 'left';
 		dlg.pos.i.margins.bottom = 10;
 		dlg.pos.i.iPos = dlg.pos.i.add('statictext');
 		dlg.pos.i.iPos.text = 'iOS shadow generator';
@@ -68,10 +72,19 @@ function layoutDialog() {
 			dlg.pos.y.yPos.text = '0';
 			dlg.pos.y.yPos.active = true;
 			dlg.pos.y.yPos.onChange = function() {
-
 				// check value
 				y = checkValue(this.text);
 				this.text = y;
+                
+                // active preview Offset
+				if (prev) {
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    dy = y;
+                    app.refresh();
+                }
 			};
 
 			// Units
@@ -96,6 +109,16 @@ function layoutDialog() {
 				// check value
 				s = checkValue(this.text);
 				this.text = s;
+                
+                // active preview Scale
+				if (prev) {
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    ds = s;
+                    app.refresh();
+                }
 			};
 
 			// units
@@ -120,20 +143,44 @@ function layoutDialog() {
 				// check value
 				b = checkValue(this.text);
 				this.text = b;
+                
+                // active preview Blur
+				if (prev) {
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    db = b;
+                    app.refresh();
+                }
 			};
 
 			// units
 			dlg.pos.b.units = dlg.pos.b.add('statictext');
 			dlg.pos.b.units.text = 'px';
 
-		// Dialog info
-		dlg.pos.i = dlg.pos.add('group');
-		dlg.pos.i.orientation = 'row';
-		dlg.pos.i.margins.bottom = 10;
-		dlg.pos.i.iPos = dlg.pos.i.add('statictext');
-		dlg.pos.i.iPos.text = 'Optimal scale 80-90%';	
-
-	// buttons
+    // preview checkbox
+	dlg.pos.preview = dlg.pos.add('checkbox');
+	dlg.pos.preview.text = '&Preview changes';
+	dlg.pos.preview.value = prev;
+	dlg.pos.preview.onClick = function() {
+        prev = !prev;
+		if (prev) {
+            doc.activeHistoryState = savedState;
+            move([0, y]);
+            if (s != 0) { scale(s); }
+            blur(b);
+            dy = y;
+            ds = s;
+            db = b;
+            app.refresh();
+		} else {
+            doc.activeHistoryState = savedState;
+            app.refresh();
+        }
+	};
+    
+    // buttons
 	dlg.btns = dlg.add('group');
 	dlg.btns.orientation = 'row';
 	dlg.btns.alignment = 'center';
@@ -142,6 +189,9 @@ function layoutDialog() {
 		dlg.btns.cancel = dlg.btns.add('button');
 		dlg.btns.cancel.text = 'Cancel';
 		dlg.btns.cancel.onClick = function() {
+			doc.activeHistoryState = savedState;
+			doc.activeLayer.remove();
+            app.purge (PurgeTarget.HISTORYCACHES);
             dlg.close(2);
 		};
 
@@ -150,13 +200,11 @@ function layoutDialog() {
 		dlg.btns.ok.text = 'OK';
 		dlg.btns.ok.onClick = function() {
 				if (b != 0) {
-	                dupLayer();
-                    moveLayer([0, y]);
-                    if (s != 0) {
-                        sizeLayer(s);
-                    }
-                    blurLayer(b);
-                    styleLayer();
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    addStyle();
                     dlg.close(1);
 				} else {
                     alert("Please input Blur value");
@@ -182,28 +230,28 @@ function layoutDialog() {
 	return dlg;
 }
 
-// dupLayer - duplicate and rename new shadow layer
-function dupLayer() {
+// duplicate - duplicate and rename new shadow layer
+function duplicate() {
 	var oldName = doc.activeLayer.name;
 	var shadowLayer = doc.activeLayer.duplicate(doc.activeLayer, ElementPlacement.PLACEAFTER);
 	shadowLayer.name = oldName + "_shadow";
 	doc.activeLayer = shadowLayer;
-	doc.activeLayer.allLocked = false;
-	doc.activeLayer.pixelsLocked = false;
-	doc.activeLayer.positionLocked = false;
-	doc.activeLayer.transparentPixelsLocked = false;
+	if (doc.activeLayer.allLocked == true) {doc.activeLayer.allLocked = false};
+    if (doc.activeLayer.pixelsLocked == true) {doc.activeLayer.pixelsLocked = false};
+    if (doc.activeLayer.positionLocked == true) {doc.activeLayer.positionLocked = false};
+    if (doc.activeLayer.transparentPixelsLocked == true) {doc.activeLayer.transparentPixelsLocked = false};
 }
 
-// sizeLayer - changing the size of the shadow layer
-function sizeLayer(s) {
+// scale - changing the size of the shadow layer
+function scale(s) {
      doc.activeLayer.resize( s, s, AnchorPosition.MIDDLECENTER );
 }
 
 function cTID(s) {return app.charIDToTypeID(s);}
 function sTID(s) {return app.stringIDToTypeID(s);}
 
-// moveLayer - move selected layers
-function moveLayer(coords) {
+// move - move selected layers
+function move(coords) {
 	var desc1 = new ActionDescriptor();
 	var ref1 = new ActionReference();
 	ref1.putEnumerated(cTID('Lyr '), cTID('Ordn'), cTID('Trgt'));
@@ -215,8 +263,8 @@ function moveLayer(coords) {
 	executeAction(cTID('move'), desc1, DialogModes.NO);
 }
 
-//blurLayer — apply Gaussian Blur for layer
-function blurLayer(b) {
+//blur — apply Gaussian Blur for layer
+function blur(b) {
 	var idGsnB = charIDToTypeID( "GsnB" );
 	var desc = new ActionDescriptor();
 	var idRds = charIDToTypeID( "Rds " );
@@ -225,8 +273,8 @@ function blurLayer(b) {
 	executeAction( idGsnB, desc, DialogModes.NO ); 
 }
 
-// styleLayer — add blen mode, color to done
-function styleLayer() { 
+// addstyle — add blend mode, dark color overlay
+function addStyle() { 
     doc.activeLayer.blendMode = BlendMode.MULTIPLY;
 	doc.activeLayer.opacity = 95.0;
     var desc1 = new ActionDescriptor();
@@ -245,7 +293,7 @@ function styleLayer() {
     desc4.putDouble(cTID('Grn '), 0);
     desc4.putDouble(cTID('Bl  '), 0);
     desc3.putObject(cTID('Clr '), sTID("RGBColor"), desc4);
-    desc3.putUnitDouble(cTID('Opct'), cTID('#Prc'), 20);
+    desc3.putUnitDouble(cTID('Opct'), cTID('#Prc'), 15);
     desc2.putObject(cTID('SoFi'), cTID('SoFi'), desc3);
     desc1.putObject(cTID('T   '), cTID('Lefx'), desc2);
     executeAction(cTID('setd'), desc1, DialogModes.NO);
@@ -273,7 +321,6 @@ function isOpenDocs() {
 	}
 }
 
-// showError - display error message if something goes wrong
 function showError(err) {
 	if (confirm('An unknown error has occurred.\n' +
 		'Would you like to see more information?', true, 'Unknown Error')) {
@@ -283,13 +330,13 @@ function showError(err) {
 
 // test initial conditions prior to running main function
 if (isCorrectVersion() && isOpenDocs()) {
-	// remember unit settings; switch to inches
+	// remember unit settings
 	var originalRulerUnits = preferences.rulerUnits;
 	preferences.rulerUnits = Units.PIXELS;
 
 	try {
 		// hide script function in history panel
-		activeDocument.suspendHistory('Move', 'main()');
+		activeDocument.suspendHistory('iShadow', 'main()');
 	}
 	catch(e) {
 		// don't report error on user cancel
