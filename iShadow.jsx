@@ -1,7 +1,7 @@
 // iShadow.jsx for Adobe Photoshop
 // Description: Script create iOS 10 style shadow for one selected layer.
 // Requirements: Adobe Photoshop CS3 and higher
-// Version: 0.2, September 2017
+// Version: 0.3, September 2017
 // Author: Sergey Osokin, graphic designer (hi@sergosokin.ru)
 // Website: http://sergosokin.ru
 // ============================================================================
@@ -19,27 +19,20 @@
 #target photoshop
 app.bringToFront();
 
-if (documents.length) {
-	var doc = app.activeDocument;
-}
-
-duplicate();
-
-// main - show dialog
+// Show dialog
 function main() {
 	uiDialog().show();
-}
+};
 
 // uiDialog - get placeholder dimensions
 function uiDialog() {
 	// declare local variables
 	var y = 0, b = 0, s = 100;
-    var dy = 0, db = 0, ds = 100; //delta value
     var prev = true; //preview state
 	var savedState = doc.activeHistoryState;
 
 	// dialog properties
-	var dlg = new Window('dialog', 'iShadow v0.2');
+	var dlg = new Window('dialog', 'iShadow v0.3');
 	dlg.orientation = 'column';
 	dlg.alignChildren = 'fill';
 
@@ -52,10 +45,10 @@ function uiDialog() {
 		// Dialog info
 		dlg.pos.i = dlg.pos.add('group');
 		dlg.pos.i.orientation = 'row';
-		dlg.pos.i.alignment = 'left';
+		dlg.pos.i.alignment = 'center';
 		dlg.pos.i.margins.bottom = 10;
 		dlg.pos.i.iPos = dlg.pos.i.add('statictext');
-		dlg.pos.i.iPos.text = 'iOS shadow generator';
+		dlg.pos.i.iPos.text = 'iOS style shadow generator';
 
 		// Offset group
 		dlg.pos.y = dlg.pos.add('group');
@@ -63,8 +56,26 @@ function uiDialog() {
 		dlg.pos.y.margins.bottom = 10;
 
 			// Offset label
-			dlg.pos.y.yLabel = dlg.pos.y.add('statictext');
-			dlg.pos.y.yLabel.text = '&Offset:';
+			dlg.pos.y.label = dlg.pos.y.add('statictext');
+			dlg.pos.y.label.text = '&Offset:';
+    
+            //Ofset slider
+            dlg.pos.y.sliderPos = dlg.pos.y.add('slider');
+			dlg.pos.y.sliderPos.value = 0;
+			dlg.pos.y.sliderPos.maxvalue = 100;
+            dlg.pos.y.sliderPos.onChange = function() {
+
+                dlg.pos.y.yPos.text = integerValue(dlg.pos.y.sliderPos.value);
+                y = dlg.pos.y.yPos.text;
+                // When checkbox Preview active
+				if (prev) {
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    app.refresh();
+                }
+			};
 
 			// Offset field
 			dlg.pos.y.yPos = dlg.pos.y.add('edittext');
@@ -72,33 +83,52 @@ function uiDialog() {
 			dlg.pos.y.yPos.text = '0';
 			dlg.pos.y.yPos.active = true;
 			dlg.pos.y.yPos.onChange = function() {
+
 				// check value
-				y = checkValue(this.text);
+				y = integerValue(this.text);
 				this.text = y;
+                dlg.pos.y.sliderPos.value = y;
                 
-                // active preview Offset
+                // When checkbox Preview active
 				if (prev) {
                     doc.activeHistoryState = savedState;
                     move([0, y]);
                     if (s != 0) { scale(s); }
                     blur(b);
-                    dy = y;
                     app.refresh();
                 }
 			};
 
-			// Units
+			// Units Offset
 			dlg.pos.y.units = dlg.pos.y.add('statictext');
 			dlg.pos.y.units.text = 'px';
-
+    
 		// Size group
 		dlg.pos.s = dlg.pos.add('group');
 		dlg.pos.s.orientation = 'row';
 		dlg.pos.s.margins.bottom = 10;
 
 			// Scale label
-			dlg.pos.s.sLabel = dlg.pos.s.add('statictext');
-			dlg.pos.s.sLabel.text = '&Scale:';
+			dlg.pos.s.label = dlg.pos.s.add('statictext');
+			dlg.pos.s.label.text = '&Scale:';
+    
+            //Scale slider
+            dlg.pos.s.sliderPos = dlg.pos.s.add('slider');
+			dlg.pos.s.sliderPos.value = 100;
+			dlg.pos.s.sliderPos.maxvalue = 100;
+            dlg.pos.s.sliderPos.onChange = function() {
+
+                dlg.pos.s.sPos.text = integerValue(dlg.pos.s.sliderPos.value);
+                s = dlg.pos.s.sPos.text;
+                // When checkbox Preview active
+				if (prev) {
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    app.refresh();
+                }
+			};
 
 			// Scale field
 			dlg.pos.s.sPos = dlg.pos.s.add('edittext');
@@ -107,21 +137,21 @@ function uiDialog() {
 			dlg.pos.s.sPos.onChange = function() {
 
 				// check value
-				s = checkValue(this.text);
+				s = integerValue(this.text);
 				this.text = s;
+                dlg.pos.s.sliderPos.value = s;
                 
-                // active preview Scale
+                // When checkbox Preview active
 				if (prev) {
                     doc.activeHistoryState = savedState;
                     move([0, y]);
                     if (s != 0) { scale(s); }
                     blur(b);
-                    ds = s;
                     app.refresh();
                 }
 			};
 
-			// units
+			// Units Scale
 			dlg.pos.s.units = dlg.pos.s.add('statictext');
 			dlg.pos.s.units.text = '%';
 
@@ -131,8 +161,26 @@ function uiDialog() {
 		dlg.pos.b.margins.bottom = 10;
 
 			// Blur label
-			dlg.pos.b.bLabel = dlg.pos.b.add('statictext');
-			dlg.pos.b.bLabel.text = '&Blur:';
+			dlg.pos.b.label = dlg.pos.b.add('statictext');
+			dlg.pos.b.label.text = '&Blur:';
+    
+            // Blur slider
+            dlg.pos.b.sliderPos = dlg.pos.b.add('slider');
+			dlg.pos.b.sliderPos.value = 0;
+			dlg.pos.b.sliderPos.maxvalue = 100;
+            dlg.pos.b.sliderPos.onChange = function() {
+
+                dlg.pos.b.bPos.text = integerValue(dlg.pos.b.sliderPos.value);
+                b = dlg.pos.b.bPos.text;
+                // When checkbox Preview active
+				if (prev) {
+                    doc.activeHistoryState = savedState;
+                    move([0, y]);
+                    if (s != 0) { scale(s); }
+                    blur(b);
+                    app.refresh();
+                }
+			};
 
 			// Blur field
 			dlg.pos.b.bPos = dlg.pos.b.add('edittext');
@@ -141,21 +189,21 @@ function uiDialog() {
 			dlg.pos.b.bPos.onChange = function() {
 
 				// check value
-				b = checkValue(this.text);
+				b = integerValue(this.text);
 				this.text = b;
+                dlg.pos.b.sliderPos.value = b;
                 
-                // active preview Blur
+                // When checkbox Preview active
 				if (prev) {
                     doc.activeHistoryState = savedState;
                     move([0, y]);
                     if (s != 0) { scale(s); }
                     blur(b);
-                    db = b;
                     app.refresh();
                 }
 			};
 
-			// units
+			// Units Blur
 			dlg.pos.b.units = dlg.pos.b.add('statictext');
 			dlg.pos.b.units.text = 'px';
 
@@ -163,6 +211,7 @@ function uiDialog() {
 	dlg.pos.preview = dlg.pos.add('checkbox');
 	dlg.pos.preview.text = '&Preview changes';
 	dlg.pos.preview.value = prev;
+    dlg.pos.preview.alignment = 'center';
 	dlg.pos.preview.onClick = function() {
         prev = !prev;
 		if (prev) {
@@ -170,9 +219,6 @@ function uiDialog() {
             move([0, y]);
             if (s != 0) { scale(s); }
             blur(b);
-            dy = y;
-            ds = s;
-            db = b;
             app.refresh();
 		} else {
             doc.activeHistoryState = savedState;
@@ -190,8 +236,8 @@ function uiDialog() {
 		dlg.btns.cancel.text = 'Cancel';
 		dlg.btns.cancel.onClick = function() {
 			doc.activeHistoryState = savedState;
+			//Delete cloned layer
 			doc.activeLayer.remove();
-            app.purge (PurgeTarget.HISTORYCACHES);
             dlg.close(2);
 		};
 
@@ -212,9 +258,9 @@ function uiDialog() {
 		};
 
 	// alignment and layout
-	var labelWidth = dlg.pos.y.yLabel.preferredSize.width;
-	dlg.pos.s.sLabel.preferredSize.width = labelWidth;
-	dlg.pos.b.bLabel.preferredSize.width = labelWidth;
+	var labelWidth = dlg.pos.y.label.preferredSize.width;
+	dlg.pos.s.label.preferredSize.width = labelWidth;
+	dlg.pos.b.label.preferredSize.width = labelWidth;
 
 
 	// dialog properties
@@ -222,7 +268,7 @@ function uiDialog() {
 	dlg.cancelElement = dlg.btns.cancel;
 
 	// check for valid integer value
-	function checkValue(value) {
+	function integerValue(value) {
 		var value = parseInt(value, 10);
 		return value ? value : 0;
 	}
@@ -236,10 +282,10 @@ function duplicate() {
 	var shadowLayer = doc.activeLayer.duplicate(doc.activeLayer, ElementPlacement.PLACEAFTER);
 	shadowLayer.name = oldName + "_shadow";
 	doc.activeLayer = shadowLayer;
-	if (doc.activeLayer.allLocked == true) {doc.activeLayer.allLocked = false};
-    if (doc.activeLayer.pixelsLocked == true) {doc.activeLayer.pixelsLocked = false};
-    if (doc.activeLayer.positionLocked == true) {doc.activeLayer.positionLocked = false};
-    if (doc.activeLayer.transparentPixelsLocked == true) {doc.activeLayer.transparentPixelsLocked = false};
+	if (doc.activeLayer.allLocked) {doc.activeLayer.allLocked = false};
+    if (doc.activeLayer.pixelsLocked) {doc.activeLayer.pixelsLocked = false};
+    if (doc.activeLayer.positionLocked) {doc.activeLayer.positionLocked = false};
+    if (doc.activeLayer.transparentPixelsLocked) {doc.activeLayer.transparentPixelsLocked = false};
 }
 
 // scale - changing the size of the shadow layer
@@ -332,11 +378,17 @@ function showError(err) {
 if (isCorrectVersion() && isOpenDocs()) {
 	// remember unit settings
 	var originalRulerUnits = preferences.rulerUnits;
+	var doc = app.activeDocument;
 	preferences.rulerUnits = Units.PIXELS;
 
 	try {
-		// hide script function in history panel
-		activeDocument.suspendHistory('iShadow', 'main()');
+		if (doc.activeLayer.isBackgroundLayer) {
+			alert('Select a Layer');
+		} else {
+			duplicate();
+			// hide script function in history panel
+			activeDocument.suspendHistory('iShadow', 'main()');
+		}
 	}
 	catch(e) {
 		// don't report error on user cancel
