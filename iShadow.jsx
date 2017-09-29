@@ -19,6 +19,9 @@
 #target photoshop
 app.bringToFront();
 
+//curent version for output
+var vers = 'iShadow v0.3'; 
+
 // Show dialog
 function main() {
 	uiDialog().show();
@@ -32,7 +35,7 @@ function uiDialog() {
 	var savedState = doc.activeHistoryState;
 
 	// dialog properties
-	var dlg = new Window('dialog', 'iShadow v0.3');
+	var dlg = new Window('dialog', vers);
 	dlg.orientation = 'column';
 	dlg.alignChildren = 'fill';
 
@@ -231,6 +234,13 @@ function uiDialog() {
 	dlg.btns.orientation = 'row';
 	dlg.btns.alignment = 'center';
 
+		// about button
+		dlg.btns.info = dlg.btns.add('button');
+		dlg.btns.info.text = 'About';
+		dlg.btns.info.onClick = function() {
+			alert(vers + '\n'+'Created by Sergey Osokin (@creold)\n'+'Behance: http://behance.net/creold\n'+'Contact: hi@sergosokin.ru\n'+'\u00A9 2017');
+		};
+
 		// cancel button
 		dlg.btns.cancel = dlg.btns.add('button');
 		dlg.btns.cancel.text = 'Cancel';
@@ -253,7 +263,7 @@ function uiDialog() {
                     addStyle();
                     dlg.close(1);
 				} else {
-                    alert("Please input Blur value");
+                    alert('iShadow\n'+'Enter a Blur value > 0');
                 }
 		};
 
@@ -368,7 +378,7 @@ function isOpenDocs() {
 }
 
 function showError(err) {
-	if (confirm('An unknown error has occurred.\n' +
+	if (confirm('iShadow: an unknown error has occurred.\n' +
 		'Would you like to see more information?', true, 'Unknown Error')) {
 			alert(err + ': on line ' + err.line, 'Script Error', true);
 	}
@@ -383,7 +393,7 @@ if (isCorrectVersion() && isOpenDocs()) {
 
 	try {
 		if (doc.activeLayer.isBackgroundLayer) {
-			alert('Select a Layer');
+			alert('iShadow: no selected layer\n'+'Select one layer and restart script');
 		} else {
 			duplicate();
 			// hide script function in history panel
