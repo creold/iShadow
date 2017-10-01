@@ -1,4 +1,4 @@
-# iShadow v0.3
+# iShadow v0.4
 
 iShadow is a helpful Photoshop script for Web and UI designers.  
 Script create iOS 10 style shadow for selected layer.
@@ -37,7 +37,8 @@ The script has been tested on Photoshop CS5 (Win), Photoshop CC 2017 (OS X El Ca
 
 **v0.1** Initial version  
 **v0.2** Added `Preview changes` checkbox  
-**v0.3** Added sliders to set values
+**v0.3** Added sliders to set values  
+**v0.4** Now the script remembers the previous values after the last run
 
 ### Optional
 Buy me a glassful of fresh juice to give me work energy: [pay $1 by PayPal] 🙂

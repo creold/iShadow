@@ -1,7 +1,7 @@
 // iShadow.jsx for Adobe Photoshop
 // Description: Script create iOS 10 style shadow for one selected layer.
 // Requirements: Adobe Photoshop CS3 and higher
-// Version: 0.3, September 2017
+// Version: 0.4, September 2017
 // Author: Sergey Osokin, graphic designer (hi@sergosokin.ru)
 // Website: http://sergosokin.ru
 // ============================================================================
@@ -20,20 +20,24 @@
 app.bringToFront();
 
 //curent version for output
-var vers = 'iShadow v0.3'; 
+const vers = 'iShadow v0.4'; 
+const SETTINGS = vers + "_settings";
+
+var prev = true; //preview
+var y, b, s;
 
 // Show dialog
 function main() {
+	initSettings();
+    preview(y, s, b, doc.activeHistoryState);
 	uiDialog().show();
 };
 
 // uiDialog - get placeholder dimensions
 function uiDialog() {
 	// declare local variables
-	var y = 0, b = 0, s = 100;
-    var prev = true; //preview state
 	var savedState = doc.activeHistoryState;
-
+		
 	// dialog properties
 	var dlg = new Window('dialog', vers);
 	dlg.orientation = 'column';
@@ -64,42 +68,29 @@ function uiDialog() {
     
             //Ofset slider
             dlg.pos.y.sliderPos = dlg.pos.y.add('slider');
-			dlg.pos.y.sliderPos.value = 0;
+			dlg.pos.y.sliderPos.value = y;
 			dlg.pos.y.sliderPos.maxvalue = 100;
             dlg.pos.y.sliderPos.onChange = function() {
 
-                dlg.pos.y.yPos.text = integerValue(dlg.pos.y.sliderPos.value);
-                y = dlg.pos.y.yPos.text;
-                // When checkbox Preview active
-				if (prev) {
-                    doc.activeHistoryState = savedState;
-                    move([0, y]);
-                    if (s != 0) { scale(s); }
-                    blur(b);
-                    app.refresh();
-                }
+                y = integerValue(dlg.pos.y.sliderPos.value);
+                dlg.pos.y.yPos.text = y;
+                // When checkbox Preview is active
+				preview(y, s, b, savedState);
 			};
 
 			// Offset field
 			dlg.pos.y.yPos = dlg.pos.y.add('edittext');
 			dlg.pos.y.yPos.characters = 5;
-			dlg.pos.y.yPos.text = '0';
+			dlg.pos.y.yPos.text = y;
 			dlg.pos.y.yPos.active = true;
 			dlg.pos.y.yPos.onChange = function() {
 
 				// check value
 				y = integerValue(this.text);
 				this.text = y;
-                dlg.pos.y.sliderPos.value = y;
-                
-                // When checkbox Preview active
-				if (prev) {
-                    doc.activeHistoryState = savedState;
-                    move([0, y]);
-                    if (s != 0) { scale(s); }
-                    blur(b);
-                    app.refresh();
-                }
+                dlg.pos.y.sliderPos.value = y;                
+                // When checkbox Preview is active
+				preview(y, s, b, savedState);
 			};
 
 			// Units Offset
@@ -117,41 +108,28 @@ function uiDialog() {
     
             //Scale slider
             dlg.pos.s.sliderPos = dlg.pos.s.add('slider');
-			dlg.pos.s.sliderPos.value = 100;
+			dlg.pos.s.sliderPos.value = s;
 			dlg.pos.s.sliderPos.maxvalue = 100;
             dlg.pos.s.sliderPos.onChange = function() {
 
                 dlg.pos.s.sPos.text = integerValue(dlg.pos.s.sliderPos.value);
                 s = dlg.pos.s.sPos.text;
-                // When checkbox Preview active
-				if (prev) {
-                    doc.activeHistoryState = savedState;
-                    move([0, y]);
-                    if (s != 0) { scale(s); }
-                    blur(b);
-                    app.refresh();
-                }
+                // When checkbox Preview is active
+				preview(y, s, b, savedState);
 			};
 
 			// Scale field
 			dlg.pos.s.sPos = dlg.pos.s.add('edittext');
 			dlg.pos.s.sPos.characters = 5;
-			dlg.pos.s.sPos.text = '100';
+			dlg.pos.s.sPos.text = s;
 			dlg.pos.s.sPos.onChange = function() {
 
 				// check value
 				s = integerValue(this.text);
 				this.text = s;
                 dlg.pos.s.sliderPos.value = s;
-                
-                // When checkbox Preview active
-				if (prev) {
-                    doc.activeHistoryState = savedState;
-                    move([0, y]);
-                    if (s != 0) { scale(s); }
-                    blur(b);
-                    app.refresh();
-                }
+                // When checkbox Preview is active
+				preview(y, s, b, savedState);
 			};
 
 			// Units Scale
@@ -169,41 +147,28 @@ function uiDialog() {
     
             // Blur slider
             dlg.pos.b.sliderPos = dlg.pos.b.add('slider');
-			dlg.pos.b.sliderPos.value = 0;
+			dlg.pos.b.sliderPos.value = b;
 			dlg.pos.b.sliderPos.maxvalue = 100;
             dlg.pos.b.sliderPos.onChange = function() {
 
                 dlg.pos.b.bPos.text = integerValue(dlg.pos.b.sliderPos.value);
                 b = dlg.pos.b.bPos.text;
-                // When checkbox Preview active
-				if (prev) {
-                    doc.activeHistoryState = savedState;
-                    move([0, y]);
-                    if (s != 0) { scale(s); }
-                    blur(b);
-                    app.refresh();
-                }
+                // When checkbox Preview is active
+				preview(y, s, b, savedState);
 			};
 
 			// Blur field
 			dlg.pos.b.bPos = dlg.pos.b.add('edittext');
 			dlg.pos.b.bPos.characters = 5;
-			dlg.pos.b.bPos.text = '0';
+			dlg.pos.b.bPos.text = b;
 			dlg.pos.b.bPos.onChange = function() {
 
 				// check value
 				b = integerValue(this.text);
 				this.text = b;
                 dlg.pos.b.sliderPos.value = b;
-                
-                // When checkbox Preview active
-				if (prev) {
-                    doc.activeHistoryState = savedState;
-                    move([0, y]);
-                    if (s != 0) { scale(s); }
-                    blur(b);
-                    app.refresh();
-                }
+                // When checkbox Preview is active
+				preview(y, s, b, savedState);
 			};
 
 			// Units Blur
@@ -216,17 +181,9 @@ function uiDialog() {
 	dlg.pos.preview.value = prev;
     dlg.pos.preview.alignment = 'center';
 	dlg.pos.preview.onClick = function() {
+		
         prev = !prev;
-		if (prev) {
-            doc.activeHistoryState = savedState;
-            move([0, y]);
-            if (s != 0) { scale(s); }
-            blur(b);
-            app.refresh();
-		} else {
-            doc.activeHistoryState = savedState;
-            app.refresh();
-        }
+		preview(y, s, b, savedState);
 	};
     
     // buttons
@@ -245,9 +202,7 @@ function uiDialog() {
 		dlg.btns.cancel = dlg.btns.add('button');
 		dlg.btns.cancel.text = 'Cancel';
 		dlg.btns.cancel.onClick = function() {
-			doc.activeHistoryState = savedState;
-			//Delete cloned layer
-			doc.activeLayer.remove();
+			doc.activeHistoryState = oldHistory[oldHistory.length-4];
             dlg.close(2);
 		};
 
@@ -257,11 +212,12 @@ function uiDialog() {
 		dlg.btns.ok.onClick = function() {
 				if (b != 0) {
                     doc.activeHistoryState = savedState;
-                    move([0, y]);
+                    move(0, y);
                     if (s != 0) { scale(s); }
-                    blur(b);
+                    curLayer.applyGaussianBlur(b);
                     addStyle();
                     dlg.close(1);
+				   saveSettings();
 				} else {
                     alert('iShadow\n'+'Enter a Blur value > 0');
                 }
@@ -277,62 +233,67 @@ function uiDialog() {
 	dlg.defaultElement = dlg.btns.ok;
 	dlg.cancelElement = dlg.btns.cancel;
 
-	// check for valid integer value
-	function integerValue(value) {
-		var value = parseInt(value, 10);
-		return value ? value : 0;
-	}
-
 	return dlg;
 }
 
-// duplicate - duplicate and rename new shadow layer
-function duplicate() {
-	var oldName = doc.activeLayer.name;
-	var shadowLayer = doc.activeLayer.duplicate(doc.activeLayer, ElementPlacement.PLACEAFTER);
-	shadowLayer.name = oldName + "_shadow";
-	doc.activeLayer = shadowLayer;
-	if (doc.activeLayer.allLocked) {doc.activeLayer.allLocked = false};
-    if (doc.activeLayer.pixelsLocked) {doc.activeLayer.pixelsLocked = false};
-    if (doc.activeLayer.positionLocked) {doc.activeLayer.positionLocked = false};
-    if (doc.activeLayer.transparentPixelsLocked) {doc.activeLayer.transparentPixelsLocked = false};
+
+function initSettings()
+{
+	try {  
+		var desc = app.getCustomOptions( SETTINGS );
+	} catch(e){}  
+	if (undefined != desc){
+        try {
+            
+            y = desc.getInteger(0);
+            b = desc.getInteger(1);
+            s = desc.getInteger(2);
+            
+            return;
+        }
+        catch(e) {}
+	}
+	y = 0, b = 0, s = 100;
+}
+
+function saveSettings()
+{
+	var desc = new ActionDescriptor();
+	desc.putInteger(0, y);
+	desc.putInteger(1, b);
+	desc.putInteger(2, s);
+	app.putCustomOptions( SETTINGS, desc, true );
+}
+
+
+function preview(y, s, b, savedState) {
+	doc.activeHistoryState = savedState;
+	if (prev) {
+		move(0, y);
+		if (s != 0) { scale(s); }
+		curLayer.applyGaussianBlur(b);
+	}
+	app.refresh();
 }
 
 // scale - changing the size of the shadow layer
 function scale(s) {
-     doc.activeLayer.resize( s, s, AnchorPosition.MIDDLECENTER );
+     curLayer.resize( s, s, AnchorPosition.MIDDLECENTER );
+}
+
+// move - move selected layers
+function move(x, y) {
+	curLayer.translate(x, y);
 }
 
 function cTID(s) {return app.charIDToTypeID(s);}
 function sTID(s) {return app.stringIDToTypeID(s);}
 
-// move - move selected layers
-function move(coords) {
-	var desc1 = new ActionDescriptor();
-	var ref1 = new ActionReference();
-	ref1.putEnumerated(cTID('Lyr '), cTID('Ordn'), cTID('Trgt'));
-	desc1.putReference(cTID('null'), ref1);
-	var desc2 = new ActionDescriptor();
-	desc2.putUnitDouble(cTID('Hrzn'), cTID('#Pxl'), coords[0]);
-	desc2.putUnitDouble(cTID('Vrtc'), cTID('#Pxl'), coords[1]);
-	desc1.putObject(cTID('T   '), cTID('Ofst'), desc2);
-	executeAction(cTID('move'), desc1, DialogModes.NO);
-}
-
-//blur — apply Gaussian Blur for layer
-function blur(b) {
-	var idGsnB = charIDToTypeID( "GsnB" );
-	var desc = new ActionDescriptor();
-	var idRds = charIDToTypeID( "Rds " );
-	var idPxl = charIDToTypeID( "#Pxl" );
-	desc.putUnitDouble( idRds, idPxl, b );
-	executeAction( idGsnB, desc, DialogModes.NO ); 
-}
 
 // addstyle — add blend mode, dark color overlay
 function addStyle() { 
-    doc.activeLayer.blendMode = BlendMode.MULTIPLY;
-	doc.activeLayer.opacity = 95.0;
+    curLayer.blendMode = BlendMode.MULTIPLY;
+	curLayer.opacity = 95.0;
     var desc1 = new ActionDescriptor();
     var ref1 = new ActionReference();
     ref1.putEnumerated(cTID('Lyr '), cTID('Ordn'), cTID('Trgt'));
@@ -377,6 +338,27 @@ function isOpenDocs() {
 	}
 }
 
+
+// duplicate - duplicate and rename new shadow layer
+function duplicate() {
+	doc.selection.deselect();
+	var oldName = curLayer.name,
+		shadowLayer = curLayer.duplicate(curLayer, ElementPlacement.PLACEAFTER);
+	shadowLayer.name = oldName + "_shadow";
+	curLayer = shadowLayer; 
+	if (curLayer.allLocked) {curLayer.allLocked = false};
+    if (curLayer.pixelsLocked) {curLayer.pixelsLocked = false};
+    if (curLayer.positionLocked) {curLayer.positionLocked = false};
+    if (curLayer.transparentPixelsLocked) {curLayer.transparentPixelsLocked = false};
+}
+
+// check for valid integer value
+function integerValue(value) {
+	var value = parseInt(value, 10);
+	return value ? value : 0;
+}
+
+
 function showError(err) {
 	if (confirm('iShadow: an unknown error has occurred.\n' +
 		'Would you like to see more information?', true, 'Unknown Error')) {
@@ -387,12 +369,14 @@ function showError(err) {
 // test initial conditions prior to running main function
 if (isCorrectVersion() && isOpenDocs()) {
 	// remember unit settings
-	var originalRulerUnits = preferences.rulerUnits;
-	var doc = app.activeDocument;
+	var originalRulerUnits = preferences.rulerUnits,
+		doc = app.activeDocument,
+		curLayer = doc.activeLayer,
+		oldHistory = app.activeDocument.historyStates;
 	preferences.rulerUnits = Units.PIXELS;
 
 	try {
-		if (doc.activeLayer.isBackgroundLayer) {
+		if (curLayer.isBackgroundLayer) {
 			alert('iShadow: no selected layer\n'+'Select one layer and restart script');
 		} else {
 			duplicate();
