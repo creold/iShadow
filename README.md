@@ -13,7 +13,7 @@ Script create iOS 10 style shadow for selected layer.**
 	- Windows (32 bit): `C:\Program Files (x86)\Adobe\Adobe Photoshop [version]\Presets\Scripts\`
 	- Windows (64 bit): `C:\Program Files\Adobe\Adobe Photoshop [version] (64 Bit)\Presets\Scripts\`
 3. Restart Photoshop
-4. You can also setup a custom hotkey in `Edit → Keyboard Shortctus…`
+4. You can also setup a custom hotkey in `Edit → Keyboard Shortcuts…`
 
 [Download archive]: https://github.com/creold/iShadow/archive/master.zip
 
