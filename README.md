@@ -42,11 +42,30 @@ The script has been tested on Photoshop CS5 (Windows 7), Photoshop CC 2017 (OS X
 | **v0.2** | Added `Preview changes` checkbox. |
 | **v0.1** |  First Release. |
 
-### Donate (optional)
-Buy me a glassful of fresh juice to give me work energy: [pay $1 by PayPal] or [Yandex Money] 🙂
+## Donate
+Many scripts are free to download thanks to user support. Help me to develop new scripts and update existing ones by supporting my work with any amount via [Buymeacoffee], [Tinkoff], [ЮMoney], [Donatty], [DonatePay]. Thank you.
 
-[pay $1 by PayPal]: https://paypal.me/osokin/1usd
-[Yandex Money]: https://money.yandex.ru/to/410011149615582
+[Buymeacoffee]: https://www.buymeacoffee.com/osokin
+[Tinkoff]: https://www.tinkoff.ru/rm/osokin.sergey127/SN67U9405/
+[ЮMoney]: https://yoomoney.ru/to/410011149615582
+[Donatty]: https://donatty.com/sergosokin
+[DonatePay]: https://new.donatepay.ru/@osokin
+
+<a href="https://www.buymeacoffee.com/osokin">
+  <img width="111" height="40" src="https://i.ibb.co/0ssTJQ1/bmc-badge.png">
+</a>
+
+<a href="https://yoomoney.ru/to/410011149615582">
+  <img width="111" height="40" src="https://i.ibb.co/wwrYWJ5/yoomoney-badge.png">
+</a>
+
+<a href="https://donatty.com/sergosokin">
+  <img width="111" height="40" src="https://i.ibb.co/s61FGCn/donatty-badge.png">
+</a>
+
+<a href="https://new.donatepay.ru/@osokin">
+  <img width="111" height="40" src="https://i.ibb.co/0KJ94ND/donatepay-badge.png">
+</a>
 
 ### Feedback & Help
 
